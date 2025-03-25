@@ -1,5 +1,6 @@
-package com.job.interview.blog.configuration;
+package com.job.interview.blog.configuration.security;
 
+import com.job.interview.blog.configuration.ApplicationProperties;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
