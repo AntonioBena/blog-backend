@@ -14,7 +14,7 @@ import java.io.Serializable;
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "user_entity")
-public class UserEntity extends AuditingModel
+public class UserEntity extends AuditingModel //TODO add security roles and other
         implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
