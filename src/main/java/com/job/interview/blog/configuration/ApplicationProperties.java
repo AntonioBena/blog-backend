@@ -25,6 +25,27 @@ public class ApplicationProperties {
         this.validation = validation;
     }
 
+    public record Email(
+            String activationUrl,
+            boolean verification
+    ) {
+    }
+
+    public record ActivationToken(
+            Long expiration,
+            Long length,
+            String chars
+    ) {
+    }
+
+    public record Jwt(
+            @NotBlank(message = "Secret is mandatory!")
+            String secret,
+            @NotBlank(message = "Expiration is mandatory!")
+            Long expiration
+    ) {
+    }
+
     public record Validation(
             @NotBlank(message = "Email regex is mandatory!")
             String emailRegex,
@@ -53,11 +74,15 @@ public class ApplicationProperties {
         private final String[] requestMatchers;
         private final CorsConfiguration corsConfiguration;
         private Boolean csrfEnabled;
+        private Jwt jwt;
+        private ActivationToken activationToken;
+        private Email email;
 
         public record CorsConfiguration(
                 @NotBlank
                 @Length(min = 3, message = "Cors pattern should be at least 3 chars long!")
                 String pattern
-        ) {}
+        ) {
+        }
     }
 }
