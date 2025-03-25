@@ -18,10 +18,12 @@ public class AuthenticationController { //every one are registered as reader, wr
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.ACCEPTED)
     public ResponseEntity<?> register(@RequestBody @Valid RegistrationRequest request) {
+        return null;
     }
 
     @PostMapping("/login")
     public ResponseEntity<?> authenticate(@RequestBody @Valid AuthenticationRequest request) {
+        return null;
     }
 
     @GetMapping("/activate-account")
