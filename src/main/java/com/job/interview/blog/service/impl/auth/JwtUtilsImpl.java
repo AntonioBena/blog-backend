@@ -1,4 +1,4 @@
-package com.job.interview.blog.service.impl;
+package com.job.interview.blog.service.impl.auth;
 
 import com.job.interview.blog.configuration.ApplicationProperties;
 import com.job.interview.blog.service.JwtUtils;
