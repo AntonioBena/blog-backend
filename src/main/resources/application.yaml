@@ -3,3 +3,68 @@ spring:
     url: ${SPRING_DATASOURCE_URL}
     username: ${SPRING_DATASOURCE_USERNAME}
     password: ${SPRING_DATASOURCE_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: 'create-drop'
+    open-in-view: false
+  mail:
+    host: ${EMAIL_HOST}
+    port: ${EMAIL_PORT}
+    username: ${EMAIL_USER_NAME}
+    password: ${EMAIL_PASSWORD}
+    protocol: smtp
+    properties:
+      "[mail.smtp.auth]": ${SM_AUTH_ENABLE}
+      "[mail.smtp.starttls]": ${SM_TTLS_ENABLE}
+server:
+  servlet:
+    context-path: /api/v1/
+
+application:
+  security:
+    email:
+      activationUrl: ${EMAIL_SEND_ACTIVATION_TOKEN_URL}
+      verification: ${SEND_EMAIL_VERIFICATION}
+    jwt:
+      secret: ${SECURITY_JWT_SECRET}
+      expiration: ${SECURITY_JWT_EXPIRATION}
+    activation-token:
+      expiration: ${ACTIVATION_CODE_EXPIRATION_MINS}
+      length: ${ACTIVATION_CODE_LENGTH}
+      chars: ${ACTIVATION_CODE_CHARS}
+    create-enabled-users: true
+    allowed-origins:
+      - http://localhost:4200
+      - https://example.com
+      - https://anotherdomain.com
+    allowed-headers:
+      - RegistrationCode
+      - Authorization
+      - Content-Type
+    allowed-methods:
+      - GET
+      - PUT
+      - POST
+      - OPTIONS
+    request-matchers:
+      - /v2/api/docs
+      - /v3/api/docs
+      - /v3/api-docs/**
+      - /swagger-resources
+      - /swagger-resources/**
+      - /configuration/ui
+      - /configuration/security
+      - /swagger-ui/**
+      - /webjars/**
+      - /swagger-ui.html
+      - /actuator/**
+      - /auth/**
+    cors-configuration:
+      pattern: "/**"
+    csrf-enabled: false
+  date:
+    format: dd/MM/yyyy
+  validation:
+    email-regex: "^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$"
+    date-regex: "^([0-2][0-9]|(3)[0-1])/(0[1-9]|1[0-2])/([0-9]{4})$"
+    registration-number-regex: "^[A-Z]{2}-\\d{3}-[A-Z]{2}$"

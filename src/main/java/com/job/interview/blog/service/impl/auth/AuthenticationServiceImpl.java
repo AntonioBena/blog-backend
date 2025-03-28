@@ -62,8 +62,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 )
                 .role(READER)
                 .build();
-        userRepository.save(user);
-        sendValidationEmail(user);
+        var createdUser = userRepository.save(user);
+        sendValidationEmail(createdUser);
         log.info("User registered successfully! {}", user);
     }
 
