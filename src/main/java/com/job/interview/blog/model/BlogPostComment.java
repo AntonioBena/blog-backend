@@ -1,5 +1,6 @@
 package com.job.interview.blog.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.job.interview.blog.model.user.UserEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
@@ -23,6 +24,10 @@ public class BlogPostComment extends AuditingModel implements Serializable {
     @NotNull(message = "Comment is mandatory")
     @NotEmpty(message = "Comment is mandatory")
     private String comment;
+    @JsonIgnore
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "blog_post_id", nullable = false)
+    private BlogPost blogPost;
     @NotNull
     @OneToOne
     private UserEntity user;

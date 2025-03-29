@@ -1,5 +1,6 @@
 package com.job.interview.blog.model;
 
+import com.job.interview.blog.model.dto.BlogPostStatus;
 import com.job.interview.blog.model.user.UserEntity;
 import jakarta.persistence.*;
 import jakarta.validation.Valid;
@@ -8,6 +9,7 @@ import jakarta.validation.constraints.NotEmpty;
 import lombok.*;
 
 import java.io.Serializable;
+import java.time.LocalDate;
 import java.util.Set;
 
 @Getter
@@ -28,8 +30,12 @@ public class BlogPost implements Serializable {
     @Column(name = "description", columnDefinition = "text")
     private String shortContent;
     private String shortContentImageUrl;
+    private LocalDate publishedAt;
     @Enumerated(EnumType.STRING)
     private BlogCategory category;
+
+    @Enumerated(EnumType.STRING)
+    private BlogPostStatus blogPostStatus;
 
     @Column(name = "html_content_path")
     private String htmlContentPath;
@@ -38,13 +44,12 @@ public class BlogPost implements Serializable {
     private long commentCount;
     private long viewCount;
 
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "post_id")
+    @OneToMany(mappedBy = "blogPost", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private Set<BlogPostComment> comments;
     private Set<String> likedBy;
 
     @Valid
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "post_id")
+    @ManyToOne(optional = false, fetch = FetchType.EAGER)
+    @JoinColumn(name = "user_id", nullable = false)
     private UserEntity postOwner;
 }

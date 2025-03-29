@@ -1,10 +1,9 @@
 package com.job.interview.blog.model.dto;
 
 import com.job.interview.blog.model.BlogCategory;
-import com.job.interview.blog.model.BlogPostComment;
-import com.job.interview.blog.model.user.UserEntity;
 import lombok.*;
 
+import java.time.LocalDate;
 import java.util.Set;
 
 @Builder
@@ -21,10 +20,11 @@ public class BlogPostDto {
     private String shortContentImageUrl;
     private BlogCategory category;
     private String htmlContentPath;
+    private LocalDate publishedAt;
     private long likeCount;
     private long commentCount;
     private long viewCount;
-    private Set<BlogPostComment> comments;
+    private Set<CommentDto> comments;
     private Set<String> likedBy;
-    private UserEntity postOwner;
+    private UserDto postOwner;
 }

@@ -10,7 +10,7 @@ import lombok.*;
 @ToString //TODO remove this
 @AllArgsConstructor
 @RequiredArgsConstructor
-public class Comment {
+public class CommentDto {
     private Long id;
     private String comment;
     private UserEntity user;

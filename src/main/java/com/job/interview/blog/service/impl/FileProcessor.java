@@ -1,11 +1,11 @@
 package com.job.interview.blog.service.impl;
 
 import lombok.extern.log4j.Log4j2;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 
 @Log4j2
 public abstract class FileProcessor {
@@ -28,5 +28,19 @@ public abstract class FileProcessor {
 
         log.info("File saved at: {}", filePath);
         return filePath;
+    }
+
+    public Resource downloadFile(String filePath) {
+        File dir = new File(filePath);
+        try{
+            if(dir.exists()){
+                Resource resource = new UrlResource(dir.toURI());
+                return resource;
+            }
+        }catch (Exception e){
+            System.out.println(e.getMessage());
+            return null;
+        }
+        return null;
     }
 }
