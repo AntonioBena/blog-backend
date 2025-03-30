@@ -1,5 +1,6 @@
 package com.job.interview.blog.model.dto;
 
+import com.job.interview.blog.model.user.UserRole;
 import lombok.*;
 
 @Getter
@@ -14,4 +15,5 @@ public class UserDto {
     private String firstName;
     private String lastName;
     private String email;
+    private UserRole role;
 }
