@@ -28,7 +28,7 @@ public class BlogPostComment extends AuditingModel implements Serializable {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "blog_post_id", nullable = false)
     private BlogPost blogPost;
-    @NotNull
-    @OneToOne
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "comment_post_id", nullable = false)
     private UserEntity user;
 }

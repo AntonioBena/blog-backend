@@ -46,6 +46,7 @@ public class BlogPost implements Serializable {
 
     @OneToMany(mappedBy = "blogPost", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private Set<BlogPostComment> comments;
+    @ElementCollection(fetch = FetchType.EAGER)
     private Set<String> likedBy;
 
     @Valid

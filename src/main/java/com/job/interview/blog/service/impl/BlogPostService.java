@@ -10,7 +10,6 @@ import com.job.interview.blog.model.dto.BlogPostDto;
 import com.job.interview.blog.model.dto.CommentDto;
 import com.job.interview.blog.model.dto.response.PageResponse;
 import com.job.interview.blog.model.user.UserEntity;
-import com.job.interview.blog.model.user.UserRole;
 import com.job.interview.blog.repository.BlogPostRepository;
 import com.job.interview.blog.repository.CommentsRepository;
 import com.job.interview.blog.repository.UserRepository;
@@ -18,18 +17,21 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import java.time.LocalDate;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Log4j2
 @Service
@@ -39,13 +41,21 @@ public class BlogPostService extends FileProcessor {
     private final BlogPostRepository blogPostRepository;
     private final CommentsRepository commentsRepository;
     private final ModelMapper mapper;
-
-    @Autowired
-    private UserRepository userRepository; //TODO remove repo
+    private final UserRepository userRepository;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
+    private UserEntity getAuthenticatedUserEntity(){
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String currentUserName = authentication.getName();
+
+        return userRepository.findUserEntityByEmail(currentUserName)
+                .orElseThrow(() -> new RuntimeException("User does not exists!"));
+    }
+
     public void saveAndPublish(String blogPostJson, MultipartFile htmlFile) throws JsonProcessingException {
+        var authUser = getAuthenticatedUserEntity();
+
         var blogPostDto = objectMapper.readValue(blogPostJson, BlogPostDto.class);
 
         var blogPostEntity = mapper.map(blogPostDto, BlogPost.class);
@@ -53,24 +63,13 @@ public class BlogPostService extends FileProcessor {
         blogPostRepository.findByIdOrReturnNull(blogPostDto.getId())
                 .ifPresentOrElse(
                         existingPost -> updateBlogPost(existingPost, htmlFile),
-                        () -> createBlogPost(blogPostEntity, htmlFile)
+                        () -> createBlogPost(blogPostEntity, htmlFile, authUser)
                 );
     }
 
     @Transactional
-    private void createBlogPost(BlogPost blogPost, MultipartFile htmlFile) { //TODO user must be present
-//        var user = UserEntity.builder() //TODO user will be loaded from security context
-//                .firstName("user")
-//                .lastName("user l")
-//                .email("toni@gmail.com")
-//                .password("1234564")
-//                .role(UserRole.WRITER)
-//                .accountLocked(false)
-//                .enabled(true)
-//                .build();
-//        var savedU = userRepository.save(user);
-
-        blogPost.setPostOwner(userRepository.findAll().getFirst());
+    private void createBlogPost(BlogPost blogPost, MultipartFile htmlFile, UserEntity user) {
+        blogPost.setPostOwner(user);
         blogPost.setPublishedAt(LocalDate.now());
 
         var savedBlogPost = blogPostRepository.save(blogPost);
@@ -83,7 +82,12 @@ public class BlogPostService extends FileProcessor {
 
     @Transactional
     private void updateBlogPost(BlogPost blogPost, MultipartFile htmlFile) {
-        blogPost.setLikedBy(blogPost.getLikedBy());
+        var authUser = getAuthenticatedUserEntity();
+
+        if(blogPost.getPostOwner() != authUser){
+            throw new RuntimeException("You can not edit someone's else blog post!");
+        }
+
         var savedHtml = saveToDisc(htmlFile, blogPost.getId());
 
         blogPost.setHtmlContentPath(savedHtml);
@@ -133,47 +137,65 @@ public class BlogPostService extends FileProcessor {
     }
 
     public void deleteBlogPost(Long id){
-        var blogPost = blogPostRepository.findById(id)
+        var authUser = getAuthenticatedUserEntity();
+
+        var foundBlogPost = blogPostRepository.findById(id)
                 .orElseThrow(()-> new RuntimeException("Not found"));
-        blogPostRepository.delete(blogPost);
+
+        if(foundBlogPost.getPostOwner() != authUser){
+            throw new RuntimeException("You can not delete someone's else blog post!");
+        }
+        blogPostRepository.delete(foundBlogPost);
     }
 
     public long likeUnlikeBlogPost(Long id){
+        var authUser = getAuthenticatedUserEntity();
         var blogPost = blogPostRepository.findById(id)
                 .orElseThrow(()-> new RuntimeException("Not found"));
-        //TODO get liked user from security context
 
-        //var likedBy = blogPost.getLikedBy().add(foundUser.getFullName());
-        // check if user already is on the list, if it is then unlike and remove from list
+        long likesCount = blogPost.getLikeCount();
+        Set<String> likedBy = blogPost.getLikedBy();
 
-        var likesCount = blogPost.getLikeCount() + 1;
+        if(likedBy
+                .contains(authUser.fullName())){
+            likedBy.remove(authUser.fullName());
+            likesCount = blogPost.getLikeCount() -1;
+            blogPost.setLikeCount(likedBy.size());
+            blogPostRepository.save(blogPost);
+            return likesCount;
+        }
 
+        likesCount = blogPost.getLikeCount() +1;
+        likedBy.add(authUser.fullName());
+        blogPost.setLikeCount(likedBy.size());
         blogPostRepository.save(blogPost);
 
         return likesCount;
     }
 
-    public CommentDto commentBlogPost(CommentDto commentDto, Long id){
-        var foundComments = commentsRepository.findAllCommentsByBlogPostId(id);
-        //TODO get user from security context
+    public Set<CommentDto> commentBlogPost(CommentDto commentDto, Long id){
         var foundPost = blogPostRepository.findById(id)
-                .orElseThrow(()-> new RuntimeException("not found"));
-
-        var user = UserEntity.builder() //TODO user will be loaded from security context
-                .firstName("user")
-                .lastName("user l")
-                .email("toni@gmail.com")
-                .password("1234564")
-                .role(UserRole.WRITER)
-                .accountLocked(false)
-                .enabled(true)
-                .build();
-        //TODO add comment repository and persist comment before adding to post
+                .orElseThrow(()-> new RuntimeException("Blog Post not found"));
+        var foundComments = foundPost.getComments();
 
         var comment = mapper.map(commentDto, BlogPostComment.class);
+
+        var authUser = getAuthenticatedUserEntity();
+        comment.setUser(authUser);
+
         comment.setBlogPost(foundPost);
         foundComments.add(comment);
         commentsRepository.save(comment);
-        return mapper.map(foundComments, CommentDto.class);
+
+        foundPost.setComments(foundComments);
+        foundPost.setCommentCount(foundPost.getCommentCount() + 1);
+        var saved = blogPostRepository.save(foundPost);
+
+        Set<CommentDto> commentSet = new HashSet<>();
+
+        saved.getComments().forEach(c ->
+                commentSet.add(mapper.map(saved.getComments(), CommentDto.class)));
+
+        return commentSet;
     }
 }

@@ -3,6 +3,7 @@ package com.job.interview.blog.controller;
 import com.job.interview.blog.model.BlogCategory;
 import com.job.interview.blog.model.dto.CommentDto;
 import com.job.interview.blog.service.impl.BlogPostService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -18,6 +19,7 @@ import java.io.*;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping(path = "blog")
+@SecurityRequirement(name = "bearerAuth")
 public class BlogPostController {
 
     private final BlogPostService blogPostService;
@@ -54,21 +56,20 @@ public class BlogPostController {
 
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteBlogPostById(@PathVariable Long id) {
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<?> deleteBlogPostById(@PathVariable(value = "id") Long id) {
         blogPostService.deleteBlogPost(id);
         return ResponseEntity.ok("Deleted!");
     }
 
-    @PutMapping("/{id}/like")
-    public ResponseEntity<?> likeUnlikeBlogPost(@PathVariable Long id) {
+    @PostMapping("/like")
+    public ResponseEntity<?> likeUnlikeBlogPost(@RequestParam(value = "id") Long id) {
         var likeCount = blogPostService.likeUnlikeBlogPost(id);
         return ResponseEntity.ok(likeCount);
     }
 
-    @PutMapping("/{id}/comment")
-    public ResponseEntity<?> commentBlogPost(@RequestBody CommentDto commentDto, @PathVariable Long id) {
-        return ResponseEntity
-                .ok(blogPostService.commentBlogPost(commentDto, id));
+    @PostMapping("/comment")
+    public ResponseEntity<?> commentBlogPost(@RequestParam(value = "id") Long id, @RequestBody CommentDto comment) {
+        return ResponseEntity.ok(blogPostService.commentBlogPost(comment, id));
     }
 }

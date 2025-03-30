@@ -13,5 +13,5 @@ import lombok.*;
 public class CommentDto {
     private Long id;
     private String comment;
-    private UserEntity user;
+    private UserDto user;
 }
