@@ -1,7 +1,8 @@
 package com.job.interview.blog.model.dto;
 
-import com.job.interview.blog.model.user.UserEntity;
 import lombok.*;
+
+import java.time.LocalDateTime;
 
 @Builder
 @Getter
@@ -13,5 +14,6 @@ import lombok.*;
 public class CommentDto {
     private Long id;
     private String comment;
+    private LocalDateTime createdAt;
     private UserDto user;
 }

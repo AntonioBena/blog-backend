@@ -4,6 +4,7 @@ import com.job.interview.blog.model.BlogCategory;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.Set;
 
 @Builder
@@ -24,7 +25,7 @@ public class BlogPostDto {
     private long likeCount;
     private long commentCount;
     private long viewCount;
-    private Set<CommentDto> comments;
+    private Collection<CommentDto> comments;
     private Set<String> likedBy;
     private UserDto postOwner;
 }

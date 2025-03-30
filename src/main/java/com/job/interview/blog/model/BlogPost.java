@@ -10,6 +10,7 @@ import lombok.*;
 
 import java.io.Serializable;
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.Set;
 
 @Getter
@@ -45,7 +46,7 @@ public class BlogPost implements Serializable {
     private long viewCount;
 
     @OneToMany(mappedBy = "blogPost", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-    private Set<BlogPostComment> comments;
+    private Collection<BlogPostComment> comments;
     @ElementCollection(fetch = FetchType.EAGER)
     private Set<String> likedBy;
 
