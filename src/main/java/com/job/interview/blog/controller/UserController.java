@@ -2,6 +2,7 @@ package com.job.interview.blog.controller;
 
 import com.job.interview.blog.model.dto.UserDto;
 import com.job.interview.blog.service.impl.UserServiceImpl;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -19,10 +20,18 @@ public class UserController {
 
     private final UserServiceImpl userService;
 
+    @Operation(
+            description = "Endpoint for getting authenticated user details",
+            summary = "Get User Details"
+    )
     @GetMapping
-    public ResponseEntity<?> uploadAndPublishBlogPost() {
+    public ResponseEntity<?> getUserDetails() {
         return ResponseEntity.ok(userService.getUserDetails());
     }
+    @Operation(
+            description = "Endpoint for updating authenticated user details",
+            summary = "Update User Details"
+    )
     @PutMapping
     public ResponseEntity<?> updateUserInfo(@RequestBody UserDto userDto){
         return ResponseEntity.ok(userService.updateUserInfo(userDto));

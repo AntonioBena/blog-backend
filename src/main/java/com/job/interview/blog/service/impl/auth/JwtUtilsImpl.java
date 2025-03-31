@@ -40,6 +40,7 @@ public class JwtUtilsImpl implements JwtUtils {
         String username = userDetails.getUsername();
         return Jwts.builder()
                 .subject(username)
+                .claim("ROLES", userDetails.getAuthorities())
                 .issuedAt(new Date())
                 .expiration(
                         new Date((new Date()).getTime() +

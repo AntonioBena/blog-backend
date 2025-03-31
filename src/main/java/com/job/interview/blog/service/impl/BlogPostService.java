@@ -43,6 +43,8 @@ public class BlogPostService extends FileProcessor {
     public void saveAndPublish(String blogPostJson, MultipartFile htmlFile) throws JsonProcessingException {
         var authUser = authContext.getAuthenticatedUserEntity();
 
+        validateAndSanitize(htmlFile);
+
         var blogPostDto = objectMapper.readValue(blogPostJson, BlogPostDto.class);
 
         var blogPostEntity = mapper.map(blogPostDto, BlogPost.class);

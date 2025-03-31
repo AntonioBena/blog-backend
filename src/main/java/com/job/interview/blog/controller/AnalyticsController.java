@@ -1,6 +1,7 @@
 package com.job.interview.blog.controller;
 
 import com.job.interview.blog.service.impl.AnalyticsService;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +22,10 @@ import java.util.Map;
 public class AnalyticsController {
     private final AnalyticsService analyticsService;
 
+    @Operation(
+            description = "Endpoint for getting analytics",
+            summary = "Gets blog posts analytics"
+    )
     @GetMapping("/count-by-year/{year}")
     public Map<Integer, Long> getBlogPostCountsByMonths(@PathVariable int year) {
         return analyticsService.countPostsByYear(year);

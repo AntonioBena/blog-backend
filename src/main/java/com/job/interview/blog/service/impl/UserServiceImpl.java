@@ -27,7 +27,7 @@ public class UserServiceImpl implements UserInfoService {
     }
 
     @Override
-    public UserDto updateUserInfo(UserDto userDto) {
+    public UserDto updateUserInfo(UserDto userDto) { //TODO add userUpdate request dto because of encrypting user data
         var foundUser = checkUserIntegrity(userDto);
 
         foundUser.setRole(userDto.getRole());

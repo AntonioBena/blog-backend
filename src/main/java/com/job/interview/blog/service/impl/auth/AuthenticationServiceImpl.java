@@ -1,6 +1,7 @@
 package com.job.interview.blog.service.impl.auth;
 
 import com.job.interview.blog.configuration.ApplicationProperties;
+import com.job.interview.blog.model.EmailTemplateName;
 import com.job.interview.blog.model.dto.request.AuthenticationRequest;
 import com.job.interview.blog.model.dto.request.RegistrationRequest;
 import com.job.interview.blog.model.dto.response.AuthenticationResponse;
@@ -9,6 +10,8 @@ import com.job.interview.blog.model.user.UserEntity;
 import com.job.interview.blog.repository.TokenRepository;
 import com.job.interview.blog.repository.UserRepository;
 import com.job.interview.blog.service.AuthenticationService;
+import com.job.interview.blog.service.EmailService;
+import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -23,6 +26,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 
 import static com.job.interview.blog.model.user.UserRole.READER;
@@ -37,9 +41,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final JwtUtilsImpl jwtUtils;
+    private final EmailService emailService;
 
     @Override
-    public void registerUser(RegistrationRequest request) { //TODO add exception handling
+    public void registerUser(RegistrationRequest request) throws MessagingException { //TODO add exception handling request could be encrypted
         log.info("Registration request email {}, lastName {}, firstName {}",
                 request.getEmail(), request.getLastName(), request.getFirstName());
         if (userRepository.existsByEmail(request.getEmail())) {
@@ -58,7 +63,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .enabled(
                         appProperties
                                 .getSecurity()
-                                .isCreateEnabledUsers()
+                                .isCreateEnabledUsers() //TODO should be false
                 )
                 .role(READER)
                 .build();
@@ -97,7 +102,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
 
     @Override
-    public void activateAccount(String activationCode) {
+    public void activateAccount(String activationCode) throws MessagingException {
         var savedToken = tokenRepository.findByToken(activationCode)
                 .orElseThrow(() -> new IllegalStateException("Token not found!"));
 
@@ -118,13 +123,27 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         log.info("Activated account for user: {}", user);
     }
 
-    private void sendValidationEmail(UserEntity user) {
+    private void sendValidationEmail(UserEntity user) throws MessagingException {
+        if(appProperties.getSecurity().isCreateEnabledUsers()){
+            return; //TODO no need for sending emails if users are enabled by default
+        }
         String generatedToken = generateAndSaveActivationToken(user);
         if (!appProperties.getSecurity().getEmail().verification()) {
             log.info("Email verification is disabled, Verification token is: {}", generatedToken);
             return;
         }
-        //TODO send email to user
+        emailService.sendEmail(
+                user.getEmail(),
+                user.getFirstName(),
+                EmailTemplateName.ACTIVATE_ACCOUNT,
+                Arrays.stream(appProperties
+                        .getSecurity()
+                        .getAllowedOrigins()) //TODO should be matched with frontend url!
+                        .findFirst()
+                        .toString(),
+                generatedToken,
+                "Account activation"
+        );
         log.info("Email verification is sent to {}", user.getEmail());
     }
 

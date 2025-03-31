@@ -17,7 +17,7 @@ public interface BlogPostRepository extends JpaRepository<BlogPost, Long> {
 
     @Query("SELECT b FROM BlogPost b WHERE (:id IS NOT NULL AND b.id = :id)")
     Optional<BlogPost> findByIdOrReturnNull(@Param("id") Long id);
-    @Query("SELECT b FROM BlogPost b WHERE (:category IS NULL OR b.category = :category)")
+    @Query("SELECT b FROM BlogPost b WHERE (b.category = :category)")
     Page<BlogPost> findAllByCategory(@Param("category") BlogCategory category, Pageable pageable);
 
     @Query("SELECT b FROM BlogPost b WHERE b.postOwner.id = :userId")
