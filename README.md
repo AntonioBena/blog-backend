@@ -1,4 +1,4 @@
-# Welcome to the vehicle-registration-backend help page!
+# Welcome to the Blog Post Application!
 
 ## Requirements
 * Java SE Development Kit 23.0.2
@@ -9,10 +9,10 @@
 * Extract Zip file
 * Open terminal in the app src
 * Run command: `./gradlew build`
-* Run command `java -jar build/libs/vehicle-registration-0.0.1.jar`
+* Run command `java -jar build/libs/blog-0.0.1-SNAPSHOT-plain.jar`
 * Enjoy!
 
-Base Url http://localhost:8009/api/v1
+Base Url http://localhost:8080/api/v1   /swagger-ui/index.html#
 
 
 ### What is missing?
