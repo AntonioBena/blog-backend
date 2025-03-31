@@ -12,7 +12,10 @@
 * Run command `java -jar build/libs/blog-0.0.1-SNAPSHOT-plain.jar`
 * Enjoy!
 
-Base Url http://localhost:8080/api/v1   /swagger-ui/index.html#
+Base Url http://localhost:8080/api/v1
+
+
+http://localhost:8080/api/v1/swagger-ui/index.html#
 
 
 ### What is missing?
