@@ -28,7 +28,7 @@ public class BlogPostController {
     public ResponseEntity<?> uploadAndPublishBlogPost(@RequestPart("blogPost") String blogPostJson,
                                                       @RequestPart("htmlContent") MultipartFile htmlFile) throws IOException {
         blogPostService.saveAndPublish(blogPostJson, htmlFile);
-        return ResponseEntity.ok("BlogPost uploaded successfully!");
+        return ResponseEntity.accepted().build();
     }
 
     @GetMapping("/all")
@@ -37,6 +37,13 @@ public class BlogPostController {
             @RequestParam(name = "page", defaultValue = "0", required = false) int page,
             @RequestParam(name = "size", defaultValue = "10", required = false) int size){
         return ResponseEntity.ok(blogPostService.getAllDisplayablePosts(page, size, category));
+    }
+
+    @GetMapping("/all/author")
+    public ResponseEntity<?> getAllBlogPosts(
+            @RequestParam(name = "page", defaultValue = "0", required = false) int page,
+            @RequestParam(name = "size", defaultValue = "10", required = false) int size){
+        return ResponseEntity.ok(blogPostService.getAllDisplayablePosts(page, size));
     }
 
     @GetMapping("/{id}")
@@ -59,7 +66,7 @@ public class BlogPostController {
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<?> deleteBlogPostById(@PathVariable(value = "id") Long id) {
         blogPostService.deleteBlogPost(id);
-        return ResponseEntity.ok("Deleted!");
+        return ResponseEntity.ok().build();
     }
 
     @PostMapping("/like")

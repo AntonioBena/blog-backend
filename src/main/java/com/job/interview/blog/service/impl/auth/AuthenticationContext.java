@@ -16,7 +16,12 @@ public class AuthenticationContext {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String currentUserName = authentication.getName();
 
-        return userRepository.findUserEntityByEmail(currentUserName)
+        var authUser = userRepository.findUserEntityByEmail(currentUserName)
                 .orElseThrow(() -> new RuntimeException("User does not exists!"));
+        if(authUser.isAccountLocked() || !authUser.isEnabled() ||
+                !authUser.isAccountNonExpired() || !authUser.isCredentialsNonExpired()){
+            throw new RuntimeException("Can not return invalid user!");
+        }
+        return authUser;
     }
 }

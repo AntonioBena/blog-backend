@@ -2,7 +2,6 @@ package com.job.interview.blog.service.impl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.job.interview.blog.configuration.ApplicationProperties;
 import com.job.interview.blog.model.BlogCategory;
 import com.job.interview.blog.model.BlogPost;
 import com.job.interview.blog.model.BlogPostComment;
@@ -12,7 +11,6 @@ import com.job.interview.blog.model.dto.response.PageResponse;
 import com.job.interview.blog.model.user.UserEntity;
 import com.job.interview.blog.repository.BlogPostRepository;
 import com.job.interview.blog.repository.CommentsRepository;
-import com.job.interview.blog.repository.UserRepository;
 import com.job.interview.blog.service.impl.auth.AuthenticationContext;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -36,13 +34,10 @@ import static com.job.interview.blog.utils.SortUtil.sortByCreatedAt;
 @Service
 @RequiredArgsConstructor
 public class BlogPostService extends FileProcessor {
-    private final ApplicationProperties appProperties;
     private final BlogPostRepository blogPostRepository;
     private final CommentsRepository commentsRepository;
     private final ModelMapper mapper;
-    private final UserRepository userRepository;
     private final AuthenticationContext authContext;
-
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     public void saveAndPublish(String blogPostJson, MultipartFile htmlFile) throws JsonProcessingException {
@@ -79,12 +74,27 @@ public class BlogPostService extends FileProcessor {
         if (blogPost.getPostOwner() != authUser) {
             throw new RuntimeException("You can not edit someone's else blog post!");
         }
+        var foundBlogPost = blogPostRepository.findById(blogPost.getId())
+                .orElseThrow(()-> new RuntimeException("Blog post not found"));
 
         var savedHtml = saveToDisc(htmlFile, blogPost.getId());
 
-        blogPost.setHtmlContentPath(savedHtml);
+        foundBlogPost.setHtmlContentPath(savedHtml);
+        foundBlogPost.setCategory(blogPost.getCategory());
+        foundBlogPost.setShortContent(blogPost.getShortContent());
+        foundBlogPost.setShortContentImageUrl(blogPost.getShortContentImageUrl());
+        foundBlogPost.setTitle(blogPost.getTitle());
+
         log.info("Updated Blog Post: {}", blogPost);
-        blogPostRepository.save(blogPost);
+        blogPostRepository.save(foundBlogPost);
+    }
+
+    public PageResponse<?> getAllDisplayablePosts(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("publishedAt").descending());
+        var authenticatedUser = authContext.getAuthenticatedUserEntity();
+        Page<BlogPost> blogPosts = blogPostRepository.findAllByAuthor(authenticatedUser.getId(), pageable);
+        log.info("Get all posts by user: {}", blogPosts);
+        return mapPostsToPageResponse(blogPosts);
     }
 
     public PageResponse<?> getAllDisplayablePosts(int page, int size, BlogCategory category) {
