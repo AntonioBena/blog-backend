@@ -1,6 +1,8 @@
 package com.job.interview.blog.service.impl.auth;
 
 import com.job.interview.blog.configuration.ApplicationProperties;
+import com.job.interview.blog.exception.auth.RegisteredUserException;
+import com.job.interview.blog.exception.auth.UserNotFoundException;
 import com.job.interview.blog.model.EmailTemplateName;
 import com.job.interview.blog.model.dto.request.AuthenticationRequest;
 import com.job.interview.blog.model.dto.request.RegistrationRequest;
@@ -49,7 +51,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 request.getEmail(), request.getLastName(), request.getFirstName());
         if (userRepository.existsByEmail(request.getEmail())) {
             log.error("User with email {} already exists", request.getEmail());
-            throw new IllegalStateException("User already registered!");
+            throw new RegisteredUserException("User already registered!");
         }
 
         var user = UserEntity.builder()
@@ -63,7 +65,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .enabled(
                         appProperties
                                 .getSecurity()
-                                .isCreateEnabledUsers() //TODO should be false
+                                .isCreateEnabledUsers()
                 )
                 .role(READER)
                 .build();
@@ -114,7 +116,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             throw new IllegalStateException("Token expired!");
         }
         var foundUser = userRepository.findById(user.getId())
-                .orElseThrow(() -> new IllegalStateException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
 
         foundUser.setEnabled(true);
         userRepository.save(foundUser);

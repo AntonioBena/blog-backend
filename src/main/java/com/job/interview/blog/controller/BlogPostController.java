@@ -75,7 +75,7 @@ public class BlogPostController {
     )
     @GetMapping(value = "/{id}/getHtmlContent", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     public ResponseEntity<?> downloadFile(@PathVariable(value = "id") Long id){
-        Resource file = blogPostService.download(id);
+        Resource file = blogPostService.downloadPostHtml(id);
         if(file == null){
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         } else {
@@ -100,7 +100,7 @@ public class BlogPostController {
     )
     @PostMapping("/like")
     public ResponseEntity<?> likeUnlikeBlogPost(@RequestParam(value = "id") Long id) {
-        var likeCount = blogPostService.likeUnlikeBlogPost(id);
+        var likeCount = blogPostService.toggleLikePost(id);
         return ResponseEntity.ok(likeCount);
     }
 

@@ -125,5 +125,38 @@ public class GlobalExceptionHandler {
                 );
     }
 
+    @ExceptionHandler(FileValidationException.class)
+    public ResponseEntity<ExceptionResponse> handleException(FileValidationException exp) {
+        return ResponseEntity
+                .status(NOT_ACCEPTABLE)
+                .body(
+                        ExceptionResponse.builder()
+                                .error(exp.getMessage())
+                                .build()
+                );
+    }
+
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<ExceptionResponse> handleException(ResourceNotFoundException exp) {
+        return ResponseEntity
+                .status(NOT_FOUND)
+                .body(
+                        ExceptionResponse.builder()
+                                .error(exp.getMessage())
+                                .build()
+                );
+    }
+
+    @ExceptionHandler(BlogPostNotFountException.class)
+    public ResponseEntity<ExceptionResponse> handleException(BlogPostNotFountException exp) {
+        return ResponseEntity
+                .status(NOT_FOUND)
+                .body(
+                        ExceptionResponse.builder()
+                                .error(exp.getMessage())
+                                .build()
+                );
+    }
+
     //TODO implement custom exceptions!
 }

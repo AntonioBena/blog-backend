@@ -1,5 +1,7 @@
 package com.job.interview.blog.service.impl;
 
+import com.job.interview.blog.exception.FileValidationException;
+import com.job.interview.blog.exception.ResourceNotFoundException;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
@@ -15,19 +17,19 @@ public abstract class FileProcessor {
 
     public void validateAndSanitize(MultipartFile file) {
         if (file == null || file.isEmpty()) {
-            throw new IllegalArgumentException("File is empty!");
+            throw new FileValidationException("File is empty!");
         }
         if (!ALLOWED_CONTENT_TYPES.contains(file.getContentType())) {
-            throw new IllegalArgumentException("Invalid file type! Only HTML files are allowed.");
+            throw new FileValidationException("Invalid file type! Only HTML files are allowed.");
         }
         if (file.getSize() > MAX_FILE_SIZE) {
-            throw new IllegalArgumentException("File is too large! Max 5MB allowed.");
+            throw new FileValidationException("File is too large! Max 5MB allowed.");
         }
         //TODO sanitize html content - did not found any java html sanitizer without vulnerabilities!
     }
 
     public String saveToDisc(MultipartFile htmlFile, Long postId) {
-        String filePath = "uploads/" + postId.toString() + ".html";
+        String filePath = "uploads/" + postId.toString() + ".html"; //TODO can be moved to applicationProperties
         File file = new File(filePath);
 
         try{
@@ -39,7 +41,7 @@ public abstract class FileProcessor {
         try (FileOutputStream fos = new FileOutputStream(file)) {
             fos.write(htmlFile.getBytes());
         } catch (IOException e) {
-            throw new RuntimeException("Error while saving the HTML file", e); //TODO add error handling
+            throw new FileValidationException("Error while saving the HTML file", e);
         }
 
         log.info("File saved at: {}", filePath);
@@ -54,8 +56,7 @@ public abstract class FileProcessor {
                 return resource;
             }
         }catch (Exception e){
-            System.out.println(e.getMessage());
-            return null;
+            throw new ResourceNotFoundException("Error while getting html content", e);
         }
         return null;
     }
