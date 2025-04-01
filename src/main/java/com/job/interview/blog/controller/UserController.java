@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @Log4j2
@@ -26,6 +27,7 @@ public class UserController {
             description = "Endpoint for getting authenticated user details",
             summary = "Get User Details"
     )
+    @PreAuthorize("hasAnyRole('READER','WRITER')")
     @GetMapping
     public ResponseEntity<?> getUserDetails() {
         return ResponseEntity.ok(userService.getCurrentUserDetails());
@@ -34,6 +36,7 @@ public class UserController {
             description = "Endpoint for updating authenticated user details",
             summary = "Update User Details"
     )
+    @PreAuthorize("hasAnyRole('READER','WRITER')")
     @PutMapping
     public ResponseEntity<?> updateUserInfo(@RequestBody UserDto userDto){
         return ResponseEntity.ok(userService.updateCurrentUserInfo(userDto));

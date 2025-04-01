@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.core.io.Resource;
 import org.springframework.http.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -25,6 +26,7 @@ public class BlogPostController {
 
     private final BlogPostService blogPostService;
 
+    @PreAuthorize("hasRole('WRITER')")
     @Operation(
             description = "Endpoint for creating and publishing post requests",
             summary = "Creates and publish blog post"
@@ -40,6 +42,7 @@ public class BlogPostController {
             description = "Endpoint for getting all blog posts",
             summary = "Gets all blog posts"
     )
+    @PreAuthorize("hasAnyRole('READER','WRITER')")
     @GetMapping("/all")
     public ResponseEntity<?> getAllBlogPosts(
             @RequestParam(name = "category") BlogCategory category,
@@ -52,6 +55,7 @@ public class BlogPostController {
             description = "Endpoint for getting all blog posts for authenticated user",
             summary = "Gets all blog posts for authenticated user"
     )
+    @PreAuthorize("hasAnyRole('READER','WRITER')")
     @GetMapping("/all/author")
     public ResponseEntity<?> getAllBlogPosts(
             @RequestParam(name = "page", defaultValue = "0", required = false) int page,
@@ -64,6 +68,7 @@ public class BlogPostController {
             summary = "Gets blog post by id"
     )
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('READER','WRITER')")
     public ResponseEntity<?> getBlogPost(@PathVariable Long id) {
         var blogPost = blogPostService.getBlogPostById(id);
         return ResponseEntity.ok(blogPost);
@@ -73,6 +78,7 @@ public class BlogPostController {
             description = "Endpoint for getting html content for blog post id",
             summary = "Gets html content by blog post id"
     )
+    @PreAuthorize("hasAnyRole('READER','WRITER')")
     @GetMapping(value = "/{id}/getHtmlContent", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     public ResponseEntity<?> downloadFile(@PathVariable(value = "id") Long id){
         Resource file = blogPostService.downloadPostHtml(id);
@@ -88,6 +94,7 @@ public class BlogPostController {
             description = "Endpoint deleting blog post by id for authenticated user",
             summary = "Deletes blog post by id"
     )
+    @PreAuthorize("hasRole('WRITER')")
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<?> deleteBlogPostById(@PathVariable(value = "id") Long id) {
         blogPostService.deleteBlogPost(id);
@@ -98,6 +105,7 @@ public class BlogPostController {
             description = "Endpoint for like post",
             summary = "Likes blog post"
     )
+    @PreAuthorize("hasAnyRole('READER','WRITER')")
     @PostMapping("/like")
     public ResponseEntity<?> likeUnlikeBlogPost(@RequestParam(value = "id") Long id) {
         var likeCount = blogPostService.toggleLikePost(id);
@@ -108,6 +116,7 @@ public class BlogPostController {
             description = "Endpoint adding comments to blog post",
             summary = "Creates new comment for blog post"
     )
+    @PreAuthorize("hasAnyRole('READER','WRITER')")
     @PostMapping("/comment")
     public ResponseEntity<?> commentBlogPost(@RequestParam(value = "id") Long id, @RequestBody CommentDto comment) {
         return ResponseEntity.ok(blogPostService.commentBlogPost(comment, id));

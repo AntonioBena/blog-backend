@@ -4,18 +4,24 @@ import com.job.interview.blog.exception.auth.UnauthorizedException;
 import com.job.interview.blog.exception.auth.UserNotFoundException;
 import com.job.interview.blog.model.dto.UserDto;
 import com.job.interview.blog.model.user.UserEntity;
+import com.job.interview.blog.model.user.UserRole;
 import com.job.interview.blog.repository.UserRepository;
 import com.job.interview.blog.service.CurrentUserInfoService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Objects;
 
 @Service
@@ -26,8 +32,17 @@ public class UserDetailsServiceImpl implements UserDetailsService, CurrentUserIn
 
     @Override
     public UserDetails loadUserByUsername(String userEmail) throws UsernameNotFoundException{
-        return userRepository.findUserEntityByEmail(userEmail)
+        UserEntity user = userRepository.findUserEntityByEmail(userEmail)
                 .orElseThrow(() -> new UserNotFoundException("User " + userEmail + " not found"));
+
+        return new User(
+                user.getUsername(),
+                user.getPassword(),
+                getAuthorities(user.getRole()));
+    }
+
+    private Collection<GrantedAuthority> getAuthorities(UserRole role) {
+        return Collections.singleton(new SimpleGrantedAuthority("ROLE_" + role.name()));
     }
 
     @Override
