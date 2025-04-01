@@ -11,7 +11,7 @@ import com.job.interview.blog.model.dto.response.PageResponse;
 import com.job.interview.blog.model.user.UserEntity;
 import com.job.interview.blog.repository.BlogPostRepository;
 import com.job.interview.blog.repository.CommentsRepository;
-import com.job.interview.blog.service.impl.auth.AuthenticationContext;
+import com.job.interview.blog.service.impl.auth.UserDetailsServiceImpl;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -37,22 +37,22 @@ public class BlogPostService extends FileProcessor {
     private final BlogPostRepository blogPostRepository;
     private final CommentsRepository commentsRepository;
     private final ModelMapper mapper;
-    private final AuthenticationContext authContext;
+    private final UserDetailsServiceImpl userDetailsService;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     public void saveAndPublish(String blogPostJson, MultipartFile htmlFile) throws JsonProcessingException {
-        var authUser = authContext.getAuthenticatedUserEntity();
+        var authUser = userDetailsService.getAuthenticatedUserEntity();
 
         validateAndSanitize(htmlFile);
 
         var blogPostDto = objectMapper.readValue(blogPostJson, BlogPostDto.class);
 
-        var blogPostEntity = mapper.map(blogPostDto, BlogPost.class);
+        var blogPostEntityRequest = mapper.map(blogPostDto, BlogPost.class);
 
         blogPostRepository.findByIdOrReturnNull(blogPostDto.getId())
                 .ifPresentOrElse(
-                        existingPost -> updateBlogPost(existingPost, htmlFile),
-                        () -> createBlogPost(blogPostEntity, htmlFile, authUser)
+                        existingPost -> updateBlogPost(existingPost, blogPostEntityRequest, htmlFile),
+                        () -> createBlogPost(blogPostEntityRequest, htmlFile, authUser)
                 );
     }
 
@@ -70,30 +70,25 @@ public class BlogPostService extends FileProcessor {
     }
 
     @Transactional
-    private void updateBlogPost(BlogPost blogPost, MultipartFile htmlFile) {
-        var authUser = authContext.getAuthenticatedUserEntity();
+    private void updateBlogPost(BlogPost foundBlogPost, BlogPost request, MultipartFile htmlFile) {
+        userDetailsService.verifyUserPermission(
+                request.getPostOwner(), "You can not edit someone's else blog post!");
 
-        if (blogPost.getPostOwner() != authUser) {
-            throw new RuntimeException("You can not edit someone's else blog post!");
-        }
-        var foundBlogPost = blogPostRepository.findById(blogPost.getId())
-                .orElseThrow(()-> new RuntimeException("Blog post not found"));
-
-        var savedHtml = saveToDisc(htmlFile, blogPost.getId());
+        var savedHtml = saveToDisc(htmlFile, request.getId());
 
         foundBlogPost.setHtmlContentPath(savedHtml);
-        foundBlogPost.setCategory(blogPost.getCategory());
-        foundBlogPost.setShortContent(blogPost.getShortContent());
-        foundBlogPost.setShortContentImageUrl(blogPost.getShortContentImageUrl());
-        foundBlogPost.setTitle(blogPost.getTitle());
+        foundBlogPost.setCategory(request.getCategory());
+        foundBlogPost.setShortContent(request.getShortContent());
+        foundBlogPost.setShortContentImageUrl(request.getShortContentImageUrl());
+        foundBlogPost.setTitle(request.getTitle());
 
-        log.info("Updated Blog Post: {}", blogPost);
+        log.info("Updated Blog Post: {}", request);
         blogPostRepository.save(foundBlogPost);
     }
 
     public PageResponse<?> getAllDisplayablePosts(int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("publishedAt").descending());
-        var authenticatedUser = authContext.getAuthenticatedUserEntity();
+        var authenticatedUser = userDetailsService.getAuthenticatedUserEntity();
         Page<BlogPost> blogPosts = blogPostRepository.findAllByAuthor(authenticatedUser.getId(), pageable);
         log.info("Get all posts by user: {}", blogPosts);
         return mapPostsToPageResponse(blogPosts);
@@ -141,18 +136,17 @@ public class BlogPostService extends FileProcessor {
     }
 
     public void deleteBlogPost(Long id) {
-        var authUser = authContext.getAuthenticatedUserEntity();
-
+        var authUser = userDetailsService.getAuthenticatedUserEntity();
         var foundBlogPost = findPostByIdOrThrow(id);
 
-        if (foundBlogPost.getPostOwner() != authUser) {
-            throw new RuntimeException("You can not delete someone's else blog post!");
-        }
+        userDetailsService.verifyUserPermission(
+                foundBlogPost.getPostOwner(), "You can not delete someone's else blog post!");
+
         blogPostRepository.delete(foundBlogPost);
     }
 
     public long likeUnlikeBlogPost(Long id) {
-        var authUser = authContext.getAuthenticatedUserEntity();
+        var authUser = userDetailsService.getAuthenticatedUserEntity();
         var blogPost = blogPostRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Blog Post not found"));
 
@@ -178,7 +172,7 @@ public class BlogPostService extends FileProcessor {
 
         var comment = mapper.map(commentDto, BlogPostComment.class);
 
-        var authUser = authContext.getAuthenticatedUserEntity();
+        var authUser = userDetailsService.getAuthenticatedUserEntity();
         comment.setUser(authUser);
 
         comment.setBlogPost(foundPost);

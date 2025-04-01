@@ -1,12 +1,14 @@
 package com.job.interview.blog.controller;
 
+
 import com.job.interview.blog.model.dto.UserDto;
-import com.job.interview.blog.service.impl.UserServiceImpl;
+import com.job.interview.blog.service.impl.auth.UserDetailsServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,7 +20,7 @@ import org.springframework.web.bind.annotation.*;
 @SecurityRequirement(name = "bearerAuth")
 public class UserController {
 
-    private final UserServiceImpl userService;
+    private final UserDetailsServiceImpl userService;
 
     @Operation(
             description = "Endpoint for getting authenticated user details",
@@ -26,7 +28,7 @@ public class UserController {
     )
     @GetMapping
     public ResponseEntity<?> getUserDetails() {
-        return ResponseEntity.ok(userService.getUserDetails());
+        return ResponseEntity.ok(userService.getCurrentUserDetails());
     }
     @Operation(
             description = "Endpoint for updating authenticated user details",
@@ -34,6 +36,6 @@ public class UserController {
     )
     @PutMapping
     public ResponseEntity<?> updateUserInfo(@RequestBody UserDto userDto){
-        return ResponseEntity.ok(userService.updateUserInfo(userDto));
+        return ResponseEntity.ok(userService.updateCurrentUserInfo(userDto));
     }
 }
