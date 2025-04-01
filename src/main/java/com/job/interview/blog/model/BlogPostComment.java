@@ -8,6 +8,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 @Getter
 @Setter
@@ -31,4 +32,26 @@ public class BlogPostComment extends AuditingModel implements Serializable {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "comment_post_id", nullable = false)
     private UserEntity user;
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        BlogPostComment that = (BlogPostComment) o;
+        return Objects.equals(id, that.id) && Objects.equals(comment, that.comment) && Objects.equals(blogPost, that.blogPost) && Objects.equals(user, that.user);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, comment, blogPost, user);
+    }
+
+    @Override
+    public String toString() {
+        return "BlogPostComment{" +
+                "id=" + id +
+                ", comment='" + comment + '\'' +
+                ", blogPost=" + blogPost +
+                ", user=" + user +
+                '}';
+    }
 }

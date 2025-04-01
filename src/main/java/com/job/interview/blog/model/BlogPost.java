@@ -11,6 +11,7 @@ import lombok.*;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.Collection;
+import java.util.Objects;
 import java.util.Set;
 
 @Getter
@@ -54,4 +55,36 @@ public class BlogPost implements Serializable {
     @ManyToOne(optional = false, fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id", nullable = false)
     private UserEntity postOwner;
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        BlogPost blogPost = (BlogPost) o;
+        return likeCount == blogPost.likeCount && commentCount == blogPost.commentCount && viewCount == blogPost.viewCount && Objects.equals(id, blogPost.id) && Objects.equals(title, blogPost.title) && Objects.equals(shortContent, blogPost.shortContent) && Objects.equals(shortContentImageUrl, blogPost.shortContentImageUrl) && Objects.equals(publishedAt, blogPost.publishedAt) && category == blogPost.category && blogPostStatus == blogPost.blogPostStatus && Objects.equals(htmlContentPath, blogPost.htmlContentPath) && Objects.equals(comments, blogPost.comments) && Objects.equals(likedBy, blogPost.likedBy) && Objects.equals(postOwner, blogPost.postOwner);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, title, shortContent, shortContentImageUrl, publishedAt, category, blogPostStatus, htmlContentPath, likeCount, commentCount, viewCount, comments, likedBy, postOwner);
+    }
+
+    @Override
+    public String toString() {
+        return "BlogPost{" +
+                "id=" + id +
+                ", title='" + title + '\'' +
+                ", shortContent='" + shortContent + '\'' +
+                ", shortContentImageUrl='" + shortContentImageUrl + '\'' +
+                ", publishedAt=" + publishedAt +
+                ", category=" + category +
+                ", blogPostStatus=" + blogPostStatus +
+                ", htmlContentPath='" + htmlContentPath + '\'' +
+                ", likeCount=" + likeCount +
+                ", commentCount=" + commentCount +
+                ", viewCount=" + viewCount +
+                ", comments=" + comments +
+                ", likedBy=" + likedBy +
+                ", postOwner=" + postOwner +
+                '}';
+    }
 }
