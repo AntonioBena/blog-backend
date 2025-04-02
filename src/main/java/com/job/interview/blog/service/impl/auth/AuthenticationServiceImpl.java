@@ -46,7 +46,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final EmailService emailService;
 
     @Override
-    public void registerUser(RegistrationRequest request) throws MessagingException { //TODO add exception handling request could be encrypted
+    public void registerUser(RegistrationRequest request) throws MessagingException {
         log.info("Registration request email {}, lastName {}, firstName {}",
                 request.getEmail(), request.getLastName(), request.getFirstName());
         if (userRepository.existsByEmail(request.getEmail())) {
@@ -127,7 +127,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     private void sendValidationEmail(UserEntity user) throws MessagingException {
         if(appProperties.getSecurity().isCreateEnabledUsers()){
-            return; //TODO no need for sending emails if users are enabled by default
+            return;
         }
         String generatedToken = generateAndSaveActivationToken(user);
         if (!appProperties.getSecurity().getEmail().verification()) {
@@ -140,7 +140,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 EmailTemplateName.ACTIVATE_ACCOUNT,
                 Arrays.stream(appProperties
                         .getSecurity()
-                        .getAllowedOrigins()) //TODO should be matched with frontend url!
+                        .getAllowedOrigins())
                         .findFirst()
                         .toString(),
                 generatedToken,

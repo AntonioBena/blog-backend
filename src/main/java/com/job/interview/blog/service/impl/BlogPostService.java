@@ -84,18 +84,12 @@ public class BlogPostService extends FileProcessor {
         foundBlogPost.setTitle(request.getTitle());
     }
 
-    public PageResponse<?> getAllDisplayablePosts(int page, int size) {
+    public PageResponse<BlogPostDto> getAllDisplayablePosts(int page, int size, Optional<BlogCategory> category) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("publishedAt").descending());
-        Page<BlogPost> blogPosts = blogPostRepository.findAllByAuthor(getAuthenticatedUser().getId(), pageable);
-        log.info("Get all posts by user: {}", blogPosts);
-        return mapPostsToPageResponse(blogPosts);
-    }
 
-    public PageResponse<?> getAllDisplayablePosts(int page, int size, BlogCategory category) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by("publishedAt").descending());
-        Page<BlogPost> blogPosts = blogPostRepository.findAllByCategory(category, pageable);
-        log.info("Get all posts by param: {}", blogPosts);
-        return mapPostsToPageResponse(blogPosts);
+        return category.map(blogCategory ->
+                        mapPostsToPageResponse(blogPostRepository.findAllByCategory(blogCategory, pageable)))
+                .orElseGet(() -> mapPostsToPageResponse(blogPostRepository.findAllByCurrentUser(getAuthenticatedUser().getId(), pageable)));
     }
 
     private PageResponse<BlogPostDto> mapPostsToPageResponse(Page<BlogPost> posts) {

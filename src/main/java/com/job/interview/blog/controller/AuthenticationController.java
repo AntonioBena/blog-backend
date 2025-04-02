@@ -2,6 +2,7 @@ package com.job.interview.blog.controller;
 
 import com.job.interview.blog.model.dto.request.AuthenticationRequest;
 import com.job.interview.blog.model.dto.request.RegistrationRequest;
+import com.job.interview.blog.model.dto.response.AuthenticationResponse;
 import com.job.interview.blog.service.impl.auth.AuthenticationServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -25,7 +26,7 @@ public class AuthenticationController {
     )
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.ACCEPTED)
-    public ResponseEntity<?> register(
+    public ResponseEntity<HttpStatus> register(
             @RequestBody @Valid RegistrationRequest request) throws MessagingException {
         authenticationService.registerUser(request);
         return ResponseEntity.accepted().build();
@@ -36,9 +37,10 @@ public class AuthenticationController {
             summary = "Authenticates user in to the application (user must be enabled)"
     )
     @PostMapping("/login")
-    public ResponseEntity<?> authenticate(
+    public ResponseEntity<AuthenticationResponse> authenticate(
             @RequestBody @Valid AuthenticationRequest request){
-        return ResponseEntity.ok(authenticationService.authenticate(request));
+        return ResponseEntity
+                .ok(authenticationService.authenticate(request));
     }
 
     @Operation(

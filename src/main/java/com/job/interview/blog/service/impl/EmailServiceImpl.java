@@ -34,11 +34,8 @@ public class EmailServiceImpl implements EmailService {
                           String subject) throws MessagingException {
         log.info("Sending email to user: {}", userName);
         String templateName;
-        if(emailTemplate == null){
-            templateName = "confirm-email";
-        }else{
-            templateName = emailTemplate.getName();
-        }
+
+        templateName = emailTemplate == null ? "confirm-email" : emailTemplate.getName();
 
         MimeMessage mimeMessage = mailSender.createMimeMessage();
         MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(

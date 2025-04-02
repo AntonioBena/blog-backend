@@ -68,7 +68,7 @@ public class JwtUtilsImpl implements JwtUtils {
     @Override
     public boolean validateJwtToken(String authToken) {
         try {
-            System.out.println("Validate");
+            log.debug("Validating jwt");
             Jwts.parser().verifyWith((SecretKey) key()).build().parseSignedClaims(authToken);
             return true;
         } catch (MalformedJwtException e) {

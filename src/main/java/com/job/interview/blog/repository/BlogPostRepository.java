@@ -21,7 +21,7 @@ public interface BlogPostRepository extends JpaRepository<BlogPost, Long> {
     Page<BlogPost> findAllByCategory(@Param("category") BlogCategory category, Pageable pageable);
 
     @Query("SELECT b FROM BlogPost b WHERE b.postOwner.id = :userId")
-    Page<BlogPost> findAllByAuthor(@Param("userId") Long userId, Pageable pageable);
+    Page<BlogPost> findAllByCurrentUser(@Param("userId") Long userId, Pageable pageable);
 
     @Query("SELECT COUNT(b) FROM BlogPost b WHERE YEAR(b.publishedAt) = :year AND b.postOwner.id = :userId")
     long countPostsByYear(

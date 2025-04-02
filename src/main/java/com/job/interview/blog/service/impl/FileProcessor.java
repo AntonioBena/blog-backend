@@ -1,5 +1,6 @@
 package com.job.interview.blog.service.impl;
 
+import com.job.interview.blog.exception.FileNotCreatedException;
 import com.job.interview.blog.exception.FileValidationException;
 import com.job.interview.blog.exception.ResourceNotFoundException;
 import lombok.extern.log4j.Log4j2;
@@ -33,9 +34,9 @@ public abstract class FileProcessor {
         File file = new File(filePath);
 
         try{
-            var success = file.getParentFile().mkdirs();
+            file.getParentFile().mkdirs();
         }catch (Exception e){
-            throw new RuntimeException("Error while creating directory", e);
+            throw new FileNotCreatedException("Error while creating directory", e);
         }
 
         try (FileOutputStream fos = new FileOutputStream(file)) {
@@ -52,8 +53,7 @@ public abstract class FileProcessor {
         File dir = new File(filePath);
         try{
             if(dir.exists()){
-                Resource resource = new UrlResource(dir.toURI());
-                return resource;
+                return new UrlResource(dir.toURI());
             }
         }catch (Exception e){
             throw new ResourceNotFoundException("Error while getting html content", e);

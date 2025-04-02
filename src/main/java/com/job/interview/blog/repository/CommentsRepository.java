@@ -8,5 +8,5 @@ import java.util.Set;
 
 @Repository
 public interface CommentsRepository extends JpaRepository<BlogPostComment, Long> {
-    Set<BlogPostComment> findAllCommentsByBlogPostId(Long id);
+    Set<BlogPostComment> findAllCommentsByBlogPostId(Long id); //TODO refactor to page
 }
